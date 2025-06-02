@@ -1,69 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:noteapp/signup.dart';
+import 'package:noteapp/homescreen.dart';
 
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
 
+class _LoginScreenState extends State<LoginScreen> {
+  final _auth = FirebaseAuth.instance;
+  bool isLogin = true;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String errorMessage = '';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  Future<void> _submit() async {
+    try {
+      if (isLogin) {
+        await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+      } else {
+        await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const  HomeScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() => errorMessage = e.message ?? 'Something went wrong');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final email = TextEditingController();
-    final pass = TextEditingController();
-
-    return SafeArea(
-      child: Scaffold(
-
-        appBar: AppBar(
-          title: const Text(
-            'Login',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              fontSize: 35,
-            ),
-          ),
-          backgroundColor: Colors.blueGrey,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
+    return Scaffold(
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(25),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextField(
-                controller: email,
-                decoration: const InputDecoration(labelText: 'Email'),
+              Text(
+                isLogin ? 'Login Yourself' : 'Create account',
+                style: TextStyle(fontSize: 29, fontWeight: FontWeight.bold),
               ),
+              SizedBox(height: 25),
               TextField(
-                controller: pass,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.email),
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 20),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: Icon(Icons.lock),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (errorMessage.isNotEmpty)
+                Text(errorMessage, style: TextStyle(color: Colors.red)),
+              SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () async {
-                  try {
-                    await FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: email.text.trim(),
-                      password: pass.text.trim(),
-                    );
-                    Navigator.pushReplacementNamed(context, '/allNotes');
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(e.toString())),
-                    );
-                  }
-                },
-                child: const Text('Login', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),),
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  minimumSize:  Size.fromHeight(55),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(isLogin ? 'Login' : 'Sign Up', style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SignupScreen()),
-                  );
+                  setState(() {
+                    isLogin = !isLogin;
+                    errorMessage = '';
+                  });
                 },
-                child: const Text('No account? Sign Up', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20,),),
+                child: Text(
+                  isLogin
+                      ? "Don't have an account? Sign up"
+                      : "Already have an account? Login",
+                  style: TextStyle(fontSize: 17),
+                ),
               ),
             ],
           ),
