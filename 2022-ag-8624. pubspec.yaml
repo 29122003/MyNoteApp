@@ -2,6 +2,9 @@ Amreen Mumtaz
 2022-ag-8624
 
 
+///////////////////////////////////////////////// Project Note App ///////////////////////////////////////////////////////////////////
+
+
 name: noteapp
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
@@ -42,6 +45,8 @@ dependencies:
   firebase_core: ^3.13.1
   firebase_auth: ^5.5.4
   cloud_firestore: ^5.6.8
+  random_string: ^2.3.1
+  fluttertoast: ^8.2.12
 
 dev_dependencies:
   flutter_test:
